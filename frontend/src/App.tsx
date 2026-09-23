@@ -1,7 +1,10 @@
+import { Button } from "./components/ui/button"
 
 function App() {
     return (
-        <div className="text-9xl">XDD</div>
+        <div className="w-full h-screen items-center flex justify-center">
+            <Button>Super cool button</Button>
+        </div>
     )
 }
 
