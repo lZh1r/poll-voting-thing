@@ -48,7 +48,7 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
+/*:root {
     --background: oklch(1 0 0);
     --foreground: oklch(0.147 0.004 49.25);
     --card: oklch(1 0 0);
@@ -81,9 +81,10 @@
     --sidebar-accent-foreground: oklch(0.216 0.006 56.043);
     --sidebar-border: oklch(0.923 0.003 48.717);
     --sidebar-ring: oklch(0.709 0.01 56.259);
-}
+}*/
 
-.dark {
+/* dark previously */
+:root {
     --background: oklch(0.147 0.004 49.25);
     --foreground: oklch(0.985 0.001 106.423);
     --card: oklch(0.216 0.006 56.043);
