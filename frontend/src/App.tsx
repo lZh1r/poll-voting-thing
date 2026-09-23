@@ -1,11 +1,17 @@
-import { Button } from "./components/ui/button"
+import { createBrowserRouter, RouterProvider } from "react-router"
+import HomePage from "./components/pages/HomePage";
+
+const router = createBrowserRouter([
+    {
+        path: "/",
+        Component: HomePage
+    }
+]);
 
 function App() {
     return (
-        <div className="w-full h-screen items-center flex justify-center">
-            <Button>Super cool button</Button>
-        </div>
-    )
+        <RouterProvider router={router} />
+    );
 }
 
-export default App
+export default App;
