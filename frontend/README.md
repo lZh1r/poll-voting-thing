@@ -1,32 +1,26 @@
-# React + TypeScript + Vite
+# Голосование
+Это приложение позволяет пользователям создавать анонимные голосования, управлять ими и участвовать в них.
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+## Основные сценарии
+- Создание голосования
+    1. Организатор заходит на страницу со списком своих голосований
+    2. Организатор нажимает кнопку для создания нового голосования
+    3. Открывается страница создания голосования, где организатор может задать название голосования и варианты
+- Участие в голосовании
+    1. Пользователь получает уникальную ссылку на голосование от организатора
+    2. Пользователь выбирает из предложенных в голосовании
+    3. Пользователь отправляет результат
+- Просмотр результатов голосования
+    1. Организатор заходит на страницу со списком своих голосований
+    2. Организатор выбирает желаемое голосование
+    3. Открывается страница голосования со всей важной информацией (т.е. количество голосов за каждый вариант, общее количество голосов)
+    4. На этой странице организатор может также удалить, приостановить/возобновить или закончить выбранное голосование а также изменить доступные пользователям варианты 
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Список экранов
+- Регистрация
+- Вход в аккаунт
+- Домашняя страница
+- Список голосований
+- Создание голосования
+- Принятие участия в голосование
+- Управление голосованием и просмотр результатов
