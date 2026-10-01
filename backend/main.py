@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
+from .routers.polls import polls_router
+
 app = FastAPI()
 
-@app.get("/")
-async def xd():
-    return "HELLOOOOOO"
+app.include_router(polls_router)

@@ -32,7 +32,7 @@ class PollOptionStatus(BaseModel):
     text: str
     votes: int
 
-class PollStatus(BaseModel):
+class PollInternalStatus(BaseModel):
     id: UUID
     title: str
     description: str
