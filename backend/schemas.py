@@ -13,7 +13,7 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
-class UserOut(BaseModel):
+class UserData(BaseModel):
     id: UUID
     name: str
     email: str
@@ -31,6 +31,12 @@ class PollOptionStatus(BaseModel):
     id: UUID
     text: str
     votes: int
+    
+class PollPreview(BaseModel):
+    id: UUID
+    title: str
+    status: PollStatus
+    total_votes: int
 
 class PollInternalStatus(BaseModel):
     id: UUID
