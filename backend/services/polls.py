@@ -3,10 +3,14 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
-from backend.errors import ConflictError, NotFoundError
-from backend.models import Poll, PollOption, PollStatus, Vote
+from backend.errors import ConflictError, ForbiddenError, NotFoundError
+from backend.models import Poll, PollOption, PollStatus, User, Vote
 from backend.schemas import PollCreate, PollInternalStatus, PollOptionStatus, PollPreview, PollUpdate
-from backend.services.users import get_user
+
+
+def ensure_owner(poll: Poll, user: User) -> None:
+    if poll.owner_id != user.id:
+        raise ForbiddenError("Этот опрос принадлежит другому пользователю")
 
 
 def get_poll(session: Session, poll_id: UUID, *, lock: bool = False) -> Poll:
@@ -32,10 +36,8 @@ def poll_preview(poll: Poll, total_votes: int) -> PollPreview:
 
 
 def list_polls(
-    session: Session, owner_id: UUID | None, offset: int, limit: int
+    session: Session, owner_id: UUID, offset: int, limit: int
 ) -> list[PollPreview]:
-    if owner_id is not None:
-        _ = get_user(session, owner_id)
     totals = (
         select(PollOption.poll_id, func.count(Vote.id).label("total_votes"))
         .join(Vote, Vote.option_id == PollOption.id)
@@ -45,8 +47,7 @@ def list_polls(
     query = select(Poll, func.coalesce(totals.c.total_votes, 0)).outerjoin(
         totals, totals.c.poll_id == Poll.id
     )
-    if owner_id is not None:
-        query = query.where(Poll.owner_id == owner_id)
+    query = query.where(Poll.owner_id == owner_id)
     query = query.order_by(Poll.created_at.desc(), Poll.id).offset(offset).limit(limit)
     return [poll_preview(poll, total) for poll, total in session.execute(query)]
 
@@ -71,10 +72,9 @@ def poll_details(session: Session, poll: Poll) -> PollInternalStatus:
     )
 
 
-def create_poll(session: Session, data: PollCreate) -> PollInternalStatus:
-    _ = get_user(session, data.owner_id)
+def create_poll(session: Session, data: PollCreate, owner: User) -> PollInternalStatus:
     poll = Poll(
-        owner_id=data.owner_id,
+        owner_id=owner.id,
         title=data.title,
         description=data.description,
         options=[
@@ -87,10 +87,9 @@ def create_poll(session: Session, data: PollCreate) -> PollInternalStatus:
     return poll_details(session, poll)
 
 
-def update_poll(session: Session, poll_id: UUID, data: PollUpdate) -> PollInternalStatus:
+def update_poll(session: Session, poll_id: UUID, data: PollUpdate, user: User) -> PollInternalStatus:
     poll = get_poll(session, poll_id, lock=True)
-    if data.owner_id is not None:
-        _ = get_user(session, data.owner_id)
+    ensure_owner(poll, user)
     if poll.status == PollStatus.finished and data.status not in {None, PollStatus.finished}:
         raise ConflictError("Завершённый опрос нельзя возобновить")
     for field, value in data.model_dump(exclude_unset=True, exclude={"options"}).items():
@@ -108,6 +107,8 @@ def update_poll(session: Session, poll_id: UUID, data: PollUpdate) -> PollIntern
     return poll_details(session, poll)
 
 
-def delete_poll(session: Session, poll_id: UUID) -> None:
-    session.delete(get_poll(session, poll_id, lock=True))
+def delete_poll(session: Session, poll_id: UUID, user: User) -> None:
+    poll = get_poll(session, poll_id, lock=True)
+    ensure_owner(poll, user)
+    session.delete(poll)
     session.flush()

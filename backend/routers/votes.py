@@ -6,6 +6,7 @@ from fastapi import APIRouter, Query, Response, status
 from backend.database import DatabaseSession
 from backend.schemas import PublicPollStatus, VoteData, VoteRequest
 from backend.services import polls, votes
+from backend.services.auth import CurrentUser
 
 votes_router = APIRouter(prefix="/api/votes", tags=["Votes"])
 
@@ -14,9 +15,11 @@ votes_router = APIRouter(prefix="/api/votes", tags=["Votes"])
 def list_votes(
     poll_id: UUID,
     session: DatabaseSession,
+    user: CurrentUser,
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 100,
 ) -> list[VoteData]:
+    polls.ensure_owner(polls.get_poll(session, poll_id), user)
     return votes.list_votes(session, poll_id, offset, limit)
 
 
@@ -31,19 +34,21 @@ def get_public_poll_status(poll_id: UUID, session: DatabaseSession) -> PublicPol
 
 
 @votes_router.get("/{poll_id}/{vote_id}")
-def get_vote(poll_id: UUID, vote_id: UUID, session: DatabaseSession) -> VoteData:
-    polls.get_poll(session, poll_id)
+def get_vote(poll_id: UUID, vote_id: UUID, session: DatabaseSession, user: CurrentUser) -> VoteData:
+    polls.ensure_owner(polls.get_poll(session, poll_id), user)
     return votes.vote_data(votes.get_vote(session, poll_id, vote_id), poll_id)
 
 
 @votes_router.patch("/{poll_id}/{vote_id}")
 def update_vote(
-    poll_id: UUID, vote_id: UUID, data: VoteRequest, session: DatabaseSession
+    poll_id: UUID, vote_id: UUID, data: VoteRequest, session: DatabaseSession, user: CurrentUser
 ) -> VoteData:
+    polls.ensure_owner(polls.get_poll(session, poll_id), user)
     return votes.update_vote(session, poll_id, vote_id, data)
 
 
 @votes_router.delete("/{poll_id}/{vote_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_vote(poll_id: UUID, vote_id: UUID, session: DatabaseSession) -> Response:
+def delete_vote(poll_id: UUID, vote_id: UUID, session: DatabaseSession, user: CurrentUser) -> Response:
+    polls.ensure_owner(polls.get_poll(session, poll_id), user)
     votes.delete_vote(session, poll_id, vote_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

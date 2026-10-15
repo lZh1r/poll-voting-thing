@@ -6,6 +6,9 @@ from sqlalchemy.orm import Session
 from backend.errors import ConflictError, NotFoundError
 from backend.models import User
 from backend.schemas import UserCreate, UserUpdate
+from argon2 import PasswordHasher
+
+password_hasher = PasswordHasher()
 
 
 def get_user(session: Session, user_id: UUID) -> User:
@@ -33,7 +36,7 @@ def ensure_email_available(
 
 def create_user(session: Session, data: UserCreate) -> User:
     ensure_email_available(session, str(data.email))
-    user = User(**data.model_dump())
+    user = User(name=data.name, email=str(data.email), password_hash=password_hasher.hash(data.password))
     session.add(user)
     session.flush()
     return user
