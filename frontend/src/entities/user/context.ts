@@ -3,8 +3,9 @@ import type { User } from "./model"
 
 interface SessionContextValue {
     user: User | null
-    signIn: (user: Omit<User, "id">) => void
-    signOut: () => void
+    isLoading: boolean
+    signIn: (mode: "login" | "register", data: { email: string; password: string; name?: string }) => Promise<void>
+    signOut: () => Promise<void>
 }
 
 export const SessionContext = createContext<SessionContextValue | null>(null)
