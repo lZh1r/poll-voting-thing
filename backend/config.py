@@ -18,6 +18,15 @@ class Settings(BaseSettings):
     postgres_password: SecretStr = SecretStr("")
     database_url: SecretStr | None = None
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    jwt_secret: SecretStr
+    secure_cookies: bool = False
+
+    @field_validator("jwt_secret")
+    @classmethod
+    def validate_jwt_secret(cls, value: SecretStr) -> SecretStr:
+        if len(value.get_secret_value()) < 32:
+            raise ValueError("JWT_SECRET must contain at least 32 characters")
+        return value
 
     @field_validator("database_url")
     @classmethod

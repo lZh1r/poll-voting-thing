@@ -38,6 +38,14 @@ class UpdateSchema(RequestSchema):
 class UserCreate(RequestSchema):
     name: ShortText
     email: EmailStr
+    password: Annotated[str, StringConstraints(min_length=8, max_length=128)]
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Пароль не может состоять только из пробелов")
+        return value
 
     @field_validator("email")
     @classmethod
@@ -55,6 +63,11 @@ class UserUpdate(UpdateSchema):
         return value.lower() if value is not None else None
 
 
+class UserLogin(RequestSchema):
+    email: EmailStr
+    password: str
+
+
 class UserData(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -64,7 +77,6 @@ class UserData(BaseModel):
 
 
 class PollCreate(RequestSchema):
-    owner_id: UUID
     title: ShortText
     description: Description = ""
     options: Options
@@ -78,7 +90,6 @@ class PollCreate(RequestSchema):
 
 
 class PollUpdate(UpdateSchema):
-    owner_id: UUID | None = None
     title: ShortText | None = None
     description: Description | None = None
     status: PollStatus | None = None

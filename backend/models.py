@@ -33,9 +33,24 @@ class User(Base):
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
     name: Mapped[str] = mapped_column(String(160))
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     polls: Mapped[list["Poll"]] = relationship(
         back_populates="owner", cascade="all, delete-orphan", passive_deletes=True
     )
+    refresh_sessions: Mapped[list["RefreshSession"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan", passive_deletes=True
+    )
+
+
+class RefreshSession(Base):
+    __tablename__: str = "refresh_sessions"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    user: Mapped[User] = relationship(back_populates="refresh_sessions")
 
 
 class Poll(Base):
