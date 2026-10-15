@@ -1,7 +1,9 @@
-import { Link, NavLink, Outlet } from "react-router"
+import { useState } from "react"
+import { Link, NavLink, Outlet, useNavigate } from "react-router"
 import { Vote } from "lucide-react"
 import { useSession } from "@/entities/user/context"
 import { Button } from "@/shared/ui/button"
+import { Feedback } from "@/shared/ui/Feedback"
 
 const navigation = [
     { to: "/", label: "Главная", end: true },
@@ -9,7 +11,19 @@ const navigation = [
 ]
 
 export default function AppLayout() {
-    const { user, signOut } = useSession()
+    const { user, isLoading, signOut } = useSession()
+    const [signOutError, setSignOutError] = useState<string | null>(null)
+    const navigate = useNavigate()
+
+    async function logout() {
+        try {
+            await signOut()
+            setSignOutError(null)
+            void navigate("/login")
+        } catch {
+            setSignOutError("Не удалось завершить сессию. Попробуйте ещё раз.")
+        }
+    }
     return (
         <div className="min-h-screen bg-background">
             <header className="sticky top-0 z-10 border-b bg-background/90 backdrop-blur">
@@ -26,9 +40,9 @@ export default function AppLayout() {
                         ))}
                     </nav>
                     <div className="flex items-center gap-2">
-                        {user ? <>
+                        {isLoading ? null : user ? <>
                             <span className="max-w-36 truncate text-sm" title={user.email}>{user.name}</span>
-                            <Button type="button" variant="ghost" size="sm" onClick={signOut}>Выйти</Button>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => void logout()}>Выйти</Button>
                         </> : <>
                             <Button nativeButton={false} variant="ghost" size="sm" render={<Link to="/login" />}>Войти</Button>
                             <Button nativeButton={false} size="sm" render={<Link to="/register" />}>Создать аккаунт</Button>
@@ -41,7 +55,7 @@ export default function AppLayout() {
                     ))}
                 </nav>
             </header>
-            <main className="mx-auto max-w-6xl px-5 py-5 sm:py-14"><Outlet /></main>
+            <main className="mx-auto max-w-6xl px-5 py-5 sm:py-14"><Feedback message={signOutError} /><Outlet /></main>
         </div>
     )
 }
