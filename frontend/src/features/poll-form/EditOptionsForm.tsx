@@ -1,5 +1,4 @@
 import { useState } from "react"
-import type { FormEvent } from "react"
 import { Save } from "lucide-react"
 import { z } from "zod"
 import { optionsSchema } from "@/entities/poll/model"
@@ -20,7 +19,7 @@ export function EditOptionsForm({ poll }: { poll: Poll }) {
     const { run, pending, error } = useAction()
     const { updateOptions } = usePolls()
 
-    async function submit(event: FormEvent<HTMLFormElement>) {
+    async function submit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault()
         setSaved(false)
         const data = validate(updateOptionsSchema, { options: options.map(option => option.text) })
